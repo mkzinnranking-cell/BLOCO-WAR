@@ -26,16 +26,35 @@ jobs:
       - name: Instalar Capacitor
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android
+          npm install -D @capacitor/assets
 
-      - name: Criar configuração Android
-        run: |
-          npx cap add android
+      - name: Criar projeto Android
+        run: npx cap add android
 
       - name: Gerar versão web
         run: npm run build
 
       - name: Copiar arquivos para Android
         run: npx cap sync android
+
+      - name: Gerar ícones Android
+        run: npx capacitor-assets generate --android
+
+      - name: Forçar modo paisagem
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path("android/app/src/main/AndroidManifest.xml")
+          s = p.read_text()
+
+          s = s.replace(
+              '<activity android:name=".MainActivity"',
+              '<activity android:name=".MainActivity" android:screenOrientation="landscape"'
+          )
+
+          p.write_text(s)
+          PY
 
       - name: Configurar Java
         uses: actions/setup-java@v4
